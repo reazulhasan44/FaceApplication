@@ -4,14 +4,29 @@ using MassTransit;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddMassTransit(x => x.UsingRabbitMq());
-builder.Services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(
+//builder.Services.AddMassTransit(x => x.UsingRabbitMq());
+//builder.Services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(
+//    cfg =>
+//    {
+//        cfg.Host("localhost", "/", h => { });
+//        builder.Services.AddSingleton(provider => provider.GetRequiredService<IBusControl>());
+//        builder.Services.AddSingleton<IHostedService, BusService>();
+//    }));
+var rabbitMqServiceBus = Bus.Factory.CreateUsingRabbitMq(
     cfg =>
     {
         cfg.Host("localhost", "/", h => { });
-        builder.Services.AddSingleton(provider => provider.GetRequiredService<IBusControl>());
-        builder.Services.AddSingleton<IHostedService, BusService>();
-    }));
+    });
+builder.Services.AddMassTransit(
+    config =>
+    {
+        config.AddBus(provider => rabbitMqServiceBus);
+    }
+    );
+builder.Services.AddSingleton<IHostedService, BusService>();
+builder.Services.AddSingleton<IBus>(rabbitMqServiceBus);
+
+
 
 builder.Services.AddControllersWithViews();
 
