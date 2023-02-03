@@ -34,6 +34,7 @@ var builder = WebApplication.CreateBuilder(args);
 //        )
 //    );
 builder.Services.AddDbContext<OrderContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("OrdersContextConnection")));
+builder.Services.AddTransient<IOrderRepository, OrderRepository>();
 
 var rabbitMqServiceBus = Bus.Factory.CreateUsingRabbitMq(
     cfg =>
