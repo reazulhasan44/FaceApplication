@@ -1,20 +1,30 @@
 using Faces.WebMvc.Services;
 using MassTransit;
+using Messaging.InterfacesConstants.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var rabbitMqServiceBus = Bus.Factory.CreateUsingRabbitMq(
-    cfg =>
+//var rabbitMqServiceBus = Bus.Factory.CreateUsingRabbitMq(
+//    cfg =>
+//    {
+//        cfg.Host("localhost", "/", h => { });
+//    });
+//builder.Services.AddMassTransit(
+//    config =>
+//    {
+//        config.AddBus(provider => rabbitMqServiceBus);
+//    });
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
     {
         cfg.Host("localhost", "/", h => { });
-    });
-builder.Services.AddMassTransit(
-    config =>
-    {
-        config.AddBus(provider => rabbitMqServiceBus);
-    });
+    }));
+});
+
 builder.Services.AddSingleton<IHostedService, BusService>();
-builder.Services.AddSingleton<IBus>(rabbitMqServiceBus);
+//builder.Services.AddSingleton<IBus>(rabbitMqServiceBus);
 
 
 

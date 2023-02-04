@@ -1,4 +1,4 @@
-using MassTransit;
+﻿using MassTransit;
 using Messaging.InterfacesConstants.Constants;
 using Microsoft.EntityFrameworkCore;
 using OrdersApi.Messages.Consumers;
@@ -6,6 +6,7 @@ using OrdersApi.Persistence;
 using OrdersApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddHttpClient();
 
 // Add services to the container.
 //builder.Services.AddMassTransit(
@@ -36,25 +37,46 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<OrderContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("OrdersContextConnection")));
 builder.Services.AddTransient<IOrderRepository, OrderRepository>();
 
-var rabbitMqServiceBus = Bus.Factory.CreateUsingRabbitMq(
-    cfg =>
+
+
+//var rabbitMqServiceBus = Bus.Factory.CreateUsingRabbitMq(
+//    cfg =>
+//    {
+//        cfg.Host("localhost", "/", h => { });
+//        cfg.ReceiveEndpoint(RabbitMqMassTransitConstants.RegisterOrderCommandQueue, e => 
+//        {
+//            e.PrefetchCount = 16;
+//            e.UseMessageRetry(x => x.Interval(2, TimeSpan.FromSeconds(10)));
+//            e.Consumer<RegisterOrderCommandConsumer>();
+//        });
+//    });
+//builder.Services.AddMassTransit(
+//    config =>
+//    {
+//        config.AddConsumer<RegisterOrderCommandConsumer>();
+//        config.AddBus(provider => rabbitMqServiceBus);
+//        //config.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
+
+//    });
+
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<RegisterOrderCommandConsumer>();
+    x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
     {
         cfg.Host("localhost", "/", h => { });
-        cfg.ReceiveEndpoint(RabbitMqMassTransitConstants.RegisterOrderCommandQueue, e => 
+        cfg.ReceiveEndpoint(RabbitMqMassTransitConstants.RegisterOrderCommandQueue, ep =>
         {
-            e.PrefetchCount = 16;
-            e.UseMessageRetry(x => x.Interval(2, TimeSpan.FromSeconds(10)));
-            e.Consumer<RegisterOrderCommandConsumer>();
+            ep.PrefetchCount = 16;
+            ep.UseMessageRetry(r => r.Interval(2, TimeSpan.FromSeconds(10)));
+            ep.ConfigureConsumer<RegisterOrderCommandConsumer>(provider);
         });
-    });
-builder.Services.AddMassTransit(
-    config =>
-    {
-        config.AddBus(provider => rabbitMqServiceBus);
-        config.AddConsumer<RegisterOrderCommandConsumer>();
-    });
+    }));
+});
+
 builder.Services.AddSingleton<IHostedService, BusService>();
-builder.Services.AddSingleton<IBus>(rabbitMqServiceBus);
+//builder.Services.AddSingleton<IBus>(rabbitMqServiceBus);
 
 builder.Services.AddSingleton<IHostedService, BusService>();
 builder.Services.AddControllers();

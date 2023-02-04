@@ -8,14 +8,25 @@ namespace FacesApi.Controllers
     [ApiController]
     public class FacesController : ControllerBase
     {
-        [HttpPost]
-        public async Task<List<byte[]>> ReadFaces()
+        //[HttpPost]
+        //public async Task<List<byte[]>> ReadFaces()
+        //{
+        //    using (var ms = new MemoryStream(2048))
+        //    {
+        //        await Request.Body.CopyToAsync(ms);
+        //        var faces = Getfaces(ms.ToArray());
+        //        return faces;
+        //    }
+        //}
+
+        [HttpPost("{orderId}")]
+        public async Task<Tuple<List<byte[]>, Guid>> ReadFaces(Guid orderId)
         {
             using (var ms = new MemoryStream(2048))
             {
                 await Request.Body.CopyToAsync(ms);
                 var faces = Getfaces(ms.ToArray());
-                return faces;
+                return new Tuple<List<byte[]>, Guid>(faces, orderId);
             }
         }
 
