@@ -1,3 +1,4 @@
+using Faces.WebMvc.RestClients;
 using Faces.WebMvc.Services;
 using MassTransit;
 using Messaging.InterfacesConstants.Constants;
@@ -24,6 +25,7 @@ builder.Services.AddMassTransit(x =>
 });
 
 builder.Services.AddSingleton<IHostedService, BusService>();
+builder.Services.AddHttpClient<IOrderManagementApi, OrderManagementApi>();
 //builder.Services.AddSingleton<IBus>(rabbitMqServiceBus);
 
 
