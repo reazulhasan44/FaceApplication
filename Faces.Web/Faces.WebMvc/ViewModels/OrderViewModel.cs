@@ -22,5 +22,7 @@ namespace Faces.WebMvc.ViewModels
 
         public byte[] ImageData { get; set; }
         public string ImageString { get; set; }
+
+        public List<OrderDetailViewModel> OrderDetails { get; set; }
     }
 }
