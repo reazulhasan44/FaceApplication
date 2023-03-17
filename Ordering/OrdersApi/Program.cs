@@ -75,7 +75,7 @@ builder.Services.AddMassTransit(x =>
     }));
 });
 
-builder.Services.AddSingleton<IHostedService, BusService>();
+//builder.Services.AddSingleton<IHostedService, BusService>();
 //builder.Services.AddSingleton<IBus>(rabbitMqServiceBus);
 
 builder.Services.AddSingleton<IHostedService, BusService>();
