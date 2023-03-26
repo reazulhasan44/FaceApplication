@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+/Ordering/OrdersApi/Controllers/WeatherForecastController.cs
+/CustomerNotification/NotificationService/appsettings.json
+/CustomerNotification/NotificationService/appsettings.Production.json
