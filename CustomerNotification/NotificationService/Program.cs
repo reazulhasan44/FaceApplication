@@ -1,5 +1,7 @@
-﻿using MassTransit;
+﻿using EmailService;
+using MassTransit;
 using Messaging.InterfacesConstants.Constants;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NotificationService.Consumers;
@@ -18,8 +20,25 @@ class Program
     private static IHostBuilder CreateHostBuilder(string[] args)
     {
         var hostBuilder = Host.CreateDefaultBuilder(args)
-            .ConfigureServices((hostContext, services) => 
+            .ConfigureHostConfiguration(configHost =>
             {
+                configHost.SetBasePath(Directory.GetCurrentDirectory());
+                configHost.AddJsonFile($"appsettings.json", optional: false);
+                configHost.AddEnvironmentVariables();
+                configHost.AddCommandLine(args);
+            })
+            .ConfigureAppConfiguration((hostContext, config) =>
+            {
+                config.AddJsonFile($"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json",
+                    optional: false);
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+                var emailConfig = hostContext.Configuration
+                    .GetSection("EmailConfiguration")
+                    .Get<EmailConfig>();
+                services.AddSingleton(emailConfig);
+                services.AddScoped<IEmailSender, EmailSender>();
                 services.AddMassTransit(x =>
                 {
                     x.AddConsumer<OrderProcessedEventConsumer>();

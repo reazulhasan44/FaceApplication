@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using EmailService;
+using MassTransit;
 using Messaging.InterfacesConstants.Events;
 using System;
 using System.Collections.Generic;
@@ -10,8 +11,15 @@ using System.Threading.Tasks;
 
 namespace NotificationService.Consumers
 {
-    internal class OrderProcessedEventConsumer : IConsumer<IOrderProcessedEvent>
+    public class OrderProcessedEventConsumer : IConsumer<IOrderProcessedEvent>
     {
+
+        private readonly IEmailSender _emailSender;
+
+        public OrderProcessedEventConsumer(IEmailSender emailSender)
+        {
+            _emailSender = emailSender;
+        }
         public async Task Consume(ConsumeContext<IOrderProcessedEvent> context)
         {
             var rootFolder = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin"));
@@ -32,9 +40,13 @@ namespace NotificationService.Consumers
                     j++;
                 }
             }
-            /* email section 
-                code to write
-             email section */
+            #region emailsection
+
+            string[] mailAdress = { result.UserEmail };
+            await _emailSender.SendEmailAsync(new Message(mailAdress,
+                                "your order " + result.OrderId, "From F&F", facesData));
+
+            #endregion emailsection
 
             await context.Publish<IOrderDispatchedEvent>(new {
                 context.Message.OrderId,

@@ -63,6 +63,7 @@ builder.Services.AddTransient<IOrderRepository, OrderRepository>();
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<RegisterOrderCommandConsumer>();
+    x.AddConsumer<OrderDispatchedEventConsumer>();
     x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
     {
         cfg.Host("localhost", "/", h => { });
@@ -71,6 +72,12 @@ builder.Services.AddMassTransit(x =>
             ep.PrefetchCount = 16;
             ep.UseMessageRetry(r => r.Interval(2, TimeSpan.FromSeconds(10)));
             ep.ConfigureConsumer<RegisterOrderCommandConsumer>(provider);
+        });
+        cfg.ReceiveEndpoint(RabbitMqMassTransitConstants.OrderDispatchedServiceQueue, ep =>
+        {
+            ep.PrefetchCount = 16;
+            ep.UseMessageRetry(r => r.Interval(2, TimeSpan.FromSeconds(10)));
+            ep.ConfigureConsumer<OrderDispatchedEventConsumer>(provider);
         });
     }));
 });
