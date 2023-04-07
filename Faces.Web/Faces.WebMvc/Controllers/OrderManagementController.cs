@@ -1,5 +1,7 @@
-﻿using Faces.WebMvc.RestClients;
+﻿using Faces.WebMvc.Models;
+using Faces.WebMvc.RestClients;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace Faces.WebMvc.Controllers
 {
@@ -19,6 +21,7 @@ namespace Faces.WebMvc.Controllers
             foreach (var order in orders)
             {
                 order.ImageString = ConvertAndFormatToString(order.ImageData);
+                order.OrderStatus = Enum.GetName(typeof(Status), order.Status);
             }
 
             return View(orders);

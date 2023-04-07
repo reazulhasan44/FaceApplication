@@ -1,5 +1,7 @@
 ﻿using MassTransit;
 using Messaging.InterfacesConstants.Commands;
+using Messaging.InterfacesConstants.Constants;
+using Messaging.InterfacesConstants.Events;
 using Newtonsoft.Json;
 using OrdersApi.Models;
 using OrdersApi.Persistence;
@@ -12,10 +14,12 @@ namespace OrdersApi.Messages.Consumers
     {
         private readonly IOrderRepository _iOrderRepository;
         private readonly IHttpClientFactory _iHttpClientFactory;
-        public RegisterOrderCommandConsumer(IOrderRepository iOrderRepository, IHttpClientFactory iHttpClientFactory)
+        private readonly IBusControl _iBusControl;
+        public RegisterOrderCommandConsumer(IOrderRepository iOrderRepository, IHttpClientFactory iHttpClientFactory, IBusControl iBusControl)
         {
             _iOrderRepository = iOrderRepository;
             _iHttpClientFactory = iHttpClientFactory;
+            _iBusControl = iBusControl;
         }
 
         public async Task Consume(ConsumeContext<IRegisterOrderCommand> context)
@@ -32,6 +36,20 @@ namespace OrdersApi.Messages.Consumers
                 var faces = orderDetailsData.Item1;
                 var orderId = orderDetailsData.Item2;
                 SaveOrderDetails(orderId, faces);
+
+                // invoke notification service queue
+
+
+                var sendToUri = new Uri($"{RabbitMqMassTransitConstants.RabbitMqUri}" + $"/{RabbitMqMassTransitConstants.NotificationServiceQueue}");
+                var endPoint = await _iBusControl.GetSendEndpoint(sendToUri);
+                await endPoint.Send<IOrderProcessedEvent>(
+                    new
+                    {
+                        result.OrderId,
+                        result.PictureUrl,
+                        faces,
+                        result.UserEmail
+                    });
 
             }
         }

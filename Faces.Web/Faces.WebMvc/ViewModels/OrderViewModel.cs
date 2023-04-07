@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Faces.WebMvc.Models;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using System.Xml.Linq;
 
 namespace Faces.WebMvc.ViewModels
@@ -19,6 +21,8 @@ namespace Faces.WebMvc.ViewModels
 
         [Display(Name = "Order Status")]
         public string OrderStatus { get; set; }
+
+        public Status Status { get; set; }
 
         public byte[] ImageData { get; set; }
         public string ImageString { get; set; }

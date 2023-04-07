@@ -51,6 +51,7 @@ class Program
                             ep.UseMessageRetry(r => r.Interval(2, TimeSpan.FromSeconds(10)));
                             ep.ConfigureConsumer<OrderProcessedEventConsumer>(provider);
                         });
+                       // cfg.ConfigureEndpoints(provider);
                     }));
                 });
                 services.AddSingleton<IHostedService, BusService>();
